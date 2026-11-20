@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer';
 import { config } from '../config/env.js';
 import { hashToken, randomTokenHex } from '../utils/jwt.js';
 
@@ -26,11 +27,20 @@ function getTransporter() {
 
 /**
  * Verify SMTP connection (used in health checks / settings UI).
+ * Hard timeout of 10 s so the request never hangs on Render/free tier.
  */
 export async function verifySmtp() {
   try {
     const t = getTransporter();
-    await t.verify();
+
+    // Race the verify call against a 10-second timeout
+    await Promise.race([
+      t.verify(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('SMTP verification timed out (10 s)')), 10_000)
+      ),
+    ]);
+
     return { ok: true, message: 'SMTP connection verified.' };
   } catch (err) {
     return { ok: false, message: err.message };
