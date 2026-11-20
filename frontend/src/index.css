@@ -1,0 +1,367 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════
+   BASE
+   Only built-in Tailwind class names inside @apply.
+═══════════════════════════════════════════════════════════ */
+@layer base {
+  :root {
+    --sidebar-w: 240px;
+  }
+
+  body {
+    @apply bg-slate-50 text-gray-800 font-sans antialiased;
+    background-color: #F4F5FB;   /* very slightly blue-tinted white — matches screenshot */
+  }
+
+  * { @apply box-border; }
+
+  h1 { @apply text-2xl font-bold   text-gray-900; }
+  h2 { @apply text-xl  font-bold   text-gray-900; }
+  h3 { @apply text-base font-semibold text-gray-800; }
+  h4 { @apply text-sm  font-semibold text-gray-700; }
+  p  { @apply text-sm text-gray-600 leading-relaxed; }
+  a  { @apply text-indigo-600 hover:text-indigo-700 transition-colors; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COMPONENTS
+═══════════════════════════════════════════════════════════ */
+@layer components {
+
+  /* ─── Layout shell ──────────────────────────────────────── */
+  .app-shell {
+    @apply flex h-screen overflow-hidden;
+    background-color: #F4F5FB;
+  }
+
+  /* ─── Sidebar ───────────────────────────────────────────── */
+  /*  Deep indigo sidebar — matches screenshot exactly        */
+  .sidebar {
+    @apply flex flex-col flex-shrink-0 overflow-y-auto overflow-x-hidden;
+    width: var(--sidebar-w);
+    background: linear-gradient(180deg, #2E2A7E 0%, #1E1B4B 100%);
+    box-shadow: 2px 0 8px 0 rgba(30,27,75,.18);
+  }
+
+  .sidebar-logo {
+    @apply flex items-center gap-2.5 px-5 py-4 border-b border-indigo-900;
+  }
+
+  .sidebar-logo-icon {
+    @apply w-8 h-8 rounded-lg flex items-center justify-center
+           text-sm font-bold text-white bg-indigo-600;
+  }
+
+  .sidebar-logo-text {
+    @apply text-sm font-semibold text-white leading-tight;
+  }
+
+  /* Section label — small caps, dim */
+  .sidebar-section {
+    @apply px-4 pt-5 pb-1 text-[10px] font-semibold uppercase tracking-widest
+           text-indigo-300 select-none;
+  }
+
+  /* Nav item */
+  .sidebar-link {
+    @apply flex items-center gap-3 mx-2 px-3 py-2 rounded-lg
+           text-sm font-medium text-indigo-200
+           hover:bg-indigo-700 hover:text-white
+           transition-colors duration-150 cursor-pointer;
+  }
+
+  /* Active nav item — white pill */
+  .sidebar-link-active {
+    @apply bg-indigo-600 text-white shadow-sm;
+  }
+
+  .sidebar-footer {
+    @apply mt-auto px-4 py-3 border-t border-indigo-900
+           text-[11px] text-indigo-400;
+  }
+
+  /* ─── Top bar ───────────────────────────────────────────── */
+  .topbar {
+    @apply h-14 bg-white border-b border-gray-200
+           flex items-center justify-between px-6
+           sticky top-0 z-20;
+    box-shadow: 0 1px 4px 0 rgba(0,0,0,.04);
+  }
+
+  .topbar-search {
+    @apply flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2
+           text-sm text-gray-500 w-64
+           focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-200
+           transition-all;
+  }
+
+  .topbar-search input {
+    @apply bg-transparent outline-none text-sm text-gray-700 w-full
+           placeholder:text-gray-400;
+  }
+
+  /* ─── Cards ─────────────────────────────────────────────── */
+  .card {
+    @apply bg-white rounded-xl border border-gray-100 overflow-hidden;
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,.06), 0 1px 2px -1px rgba(0,0,0,.04);
+  }
+
+  .card:hover {
+    box-shadow: 0 4px 12px 0 rgba(79,70,229,.10);
+  }
+
+  .card-body {
+    @apply p-5;
+  }
+
+  /* ─── KPI / stat cards ──────────────────────────────────── */
+  .kpi-card {
+    @apply card card-body flex items-center justify-between gap-4
+           cursor-pointer transition-all duration-200;
+  }
+
+  .kpi-card:hover {
+    @apply -translate-y-0.5;
+    box-shadow: 0 6px 16px 0 rgba(79,70,229,.14);
+  }
+
+  .kpi-icon {
+    @apply w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0;
+  }
+
+  /* ─── Buttons ───────────────────────────────────────────── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg
+           text-sm font-semibold transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-offset-1
+           disabled:opacity-60 disabled:cursor-not-allowed select-none;
+  }
+
+  .btn-primary {
+    @apply btn bg-indigo-600 text-white
+           hover:bg-indigo-700 active:bg-indigo-800
+           focus:ring-indigo-400;
+    box-shadow: 0 1px 4px rgba(79,70,229,.35);
+  }
+
+  .btn-secondary {
+    @apply btn bg-gray-100 text-gray-700
+           hover:bg-gray-200 active:bg-gray-300
+           focus:ring-gray-300;
+  }
+
+  .btn-success {
+    @apply btn bg-emerald-500 text-white
+           hover:bg-emerald-600 active:bg-emerald-700
+           focus:ring-emerald-400;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-500 text-white
+           hover:bg-red-600 active:bg-red-700
+           focus:ring-red-400;
+  }
+
+  .btn-warning {
+    @apply btn bg-amber-500 text-white
+           hover:bg-amber-600 active:bg-amber-700
+           focus:ring-amber-400;
+  }
+
+  .btn-outline {
+    @apply btn bg-white border border-gray-300 text-gray-700
+           hover:bg-gray-50 active:bg-gray-100
+           focus:ring-gray-300;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-gray-600
+           hover:bg-gray-100
+           focus:ring-gray-300;
+  }
+
+  .btn-indigo-soft {
+    @apply btn bg-indigo-50 text-indigo-700
+           hover:bg-indigo-100
+           focus:ring-indigo-300;
+  }
+
+  .btn-sm  { @apply px-3 py-1.5 text-xs; }
+  .btn-lg  { @apply px-6 py-3 text-base; }
+  .btn-icon { @apply p-2 rounded-lg; }
+
+  /* ─── Inputs ────────────────────────────────────────────── */
+  .input {
+    @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-2
+           text-sm text-gray-800 placeholder:text-gray-400
+           focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100
+           transition-colors;
+  }
+
+  .input-error {
+    @apply border-red-400 focus:border-red-500 focus:ring-red-100;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+
+  .field-error {
+    @apply mt-1 text-xs text-red-600;
+  }
+
+  /* ─── Tables ────────────────────────────────────────────── */
+  .table-base {
+    @apply w-full text-sm text-left;
+  }
+
+  .table-base thead {
+    @apply bg-gray-50 border-b border-gray-200;
+  }
+
+  .table-base th {
+    @apply px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500;
+  }
+
+  .table-base td {
+    @apply px-4 py-3 border-b border-gray-100 text-gray-700 align-middle;
+  }
+
+  .table-base tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .table-base tbody tr:hover {
+    @apply bg-indigo-50 transition-colors;
+  }
+
+  /* ─── Badges / Status pills ─────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-indigo  { @apply badge bg-indigo-100  text-indigo-700;  }
+  .badge-green   { @apply badge bg-emerald-100 text-emerald-700; }
+  .badge-red     { @apply badge bg-red-100     text-red-700;     }
+  .badge-amber   { @apply badge bg-amber-100   text-amber-700;   }
+  .badge-blue    { @apply badge bg-blue-100    text-blue-700;    }
+  .badge-purple  { @apply badge bg-purple-100  text-purple-700;  }
+  .badge-gray    { @apply badge bg-gray-100    text-gray-600;    }
+
+  /* Legacy names (keep backward compat) */
+  .badge-primary   { @apply badge-indigo;  }
+  .badge-success   { @apply badge-green;   }
+  .badge-danger    { @apply badge-red;     }
+  .badge-warning   { @apply badge-amber;   }
+  .badge-secondary { @apply badge-gray;    }
+
+  /* ─── Modals ────────────────────────────────────────────── */
+  .modal-backdrop {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+    background: rgba(15,12,51,.45);
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-box {
+    @apply bg-white rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto;
+  }
+
+  .modal-header {
+    @apply flex items-center justify-between px-6 py-4 border-b border-gray-100;
+  }
+
+  .modal-body   { @apply px-6 py-5; }
+  .modal-footer { @apply px-6 py-4 border-t border-gray-100 flex justify-end gap-3; }
+
+  /* ─── Empty state ───────────────────────────────────────── */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-14 text-center;
+  }
+
+  .empty-state-icon {
+    @apply w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center
+           text-gray-400 mx-auto mb-4;
+  }
+
+  /* ─── Page header ───────────────────────────────────────── */
+  .page-header {
+    @apply flex items-center justify-between mb-6;
+  }
+
+  .page-title {
+    @apply text-xl font-bold text-gray-900;
+  }
+
+  .page-subtitle {
+    @apply text-sm text-gray-500 mt-0.5;
+  }
+
+  /* ─── Section divider ───────────────────────────────────── */
+  .divider { @apply border-t border-gray-200 my-4; }
+
+  /* ─── Colored icon containers (like screenshot) ─────────── */
+  .icon-box-indigo { @apply w-10 h-10 rounded-xl bg-indigo-600  flex items-center justify-center text-white; }
+  .icon-box-green  { @apply w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white; }
+  .icon-box-red    { @apply w-10 h-10 rounded-xl bg-red-500     flex items-center justify-center text-white; }
+  .icon-box-amber  { @apply w-10 h-10 rounded-xl bg-amber-500   flex items-center justify-center text-white; }
+  .icon-box-purple { @apply w-10 h-10 rounded-xl bg-purple-600  flex items-center justify-center text-white; }
+  .icon-box-blue   { @apply w-10 h-10 rounded-xl bg-blue-500    flex items-center justify-center text-white; }
+
+  /* Soft tinted icon boxes (for subtler cards) */
+  .icon-soft-indigo { @apply w-10 h-10 rounded-xl bg-indigo-50  flex items-center justify-center text-indigo-600; }
+  .icon-soft-green  { @apply w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600; }
+  .icon-soft-red    { @apply w-10 h-10 rounded-xl bg-red-50     flex items-center justify-center text-red-600; }
+  .icon-soft-amber  { @apply w-10 h-10 rounded-xl bg-amber-50   flex items-center justify-center text-amber-600; }
+  .icon-soft-purple { @apply w-10 h-10 rounded-xl bg-purple-50  flex items-center justify-center text-purple-600; }
+  .icon-soft-blue   { @apply w-10 h-10 rounded-xl bg-blue-50    flex items-center justify-center text-blue-600; }
+
+  /* ─── Decorative blob (the pastel circle on role cards) ──── */
+  .blob {
+    @apply absolute rounded-full opacity-30 pointer-events-none;
+  }
+
+  /* ─── Pagination ────────────────────────────────────────── */
+  .pagination {
+    @apply flex items-center justify-between px-4 py-3
+           border-t border-gray-100 text-sm text-gray-500;
+  }
+
+  .pagination-btn {
+    @apply btn-outline btn-sm disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  /* ─── Alert / info banner ───────────────────────────────── */
+  .alert        { @apply rounded-xl border px-4 py-3 text-sm flex items-start gap-3; }
+  .alert-info   { @apply alert bg-blue-50   border-blue-200  text-blue-800;   }
+  .alert-success{ @apply alert bg-emerald-50 border-emerald-200 text-emerald-800; }
+  .alert-danger { @apply alert bg-red-50    border-red-200   text-red-800;    }
+  .alert-warning{ @apply alert bg-amber-50  border-amber-200 text-amber-800;  }
+
+  /* ─── Spinner ───────────────────────────────────────────── */
+  .spinner {
+    @apply inline-block rounded-full border-2 border-gray-200
+           animate-spin;
+    border-top-color: #4F46E5;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════════════════════ */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: #CBD5E1; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════════════════ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.fade-in { animation: fadeIn 0.18s ease-out both; }
