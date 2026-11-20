@@ -406,19 +406,16 @@ export default function NewLeadDrawer({ open, onClose }) {
 
                       {sendEmail && (
                         <>
-                          {/* Producer — always shown, auto-selected */}
+                          {/* Producer — always included, cannot be unchecked */}
                           <div>
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Assigned Producer</p>
-                            <label className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-200 cursor-pointer hover:border-indigo-300 transition-colors">
+                            <div className="flex items-center gap-3 p-3 rounded-xl bg-indigo-50 border-2 border-indigo-300">
                               <input
                                 type="checkbox"
-                                checked={selectedRecipients.has(form.producerEmail)}
-                                onChange={(e) => {
-                                  const next = new Set(selectedRecipients);
-                                  e.target.checked ? next.add(form.producerEmail) : next.delete(form.producerEmail);
-                                  setSelectedRecipients(next);
-                                }}
-                                className="rounded border-gray-300 text-indigo-600 w-4 h-4"
+                                checked={true}
+                                readOnly
+                                disabled
+                                className="rounded border-indigo-400 text-indigo-600 w-4 h-4 cursor-not-allowed opacity-70"
                               />
                               <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
                                 {form.producerName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
@@ -427,8 +424,8 @@ export default function NewLeadDrawer({ open, onClose }) {
                                 <p className="text-sm font-semibold text-gray-800">{form.producerName}</p>
                                 <p className="text-xs text-gray-500">{form.producerEmail}</p>
                               </div>
-                              <span className="ml-auto text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">Producer</span>
-                            </label>
+                              <span className="ml-auto text-xs bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded-full font-semibold">Always included</span>
+                            </div>
                           </div>
 
                           {/* Managers */}

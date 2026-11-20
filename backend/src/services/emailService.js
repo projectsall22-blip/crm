@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer';
-import nodemailer from 'nodemailer';
 import { config } from '../config/env.js';
 import { hashToken, randomTokenHex } from '../utils/jwt.js';
 
