@@ -107,6 +107,9 @@ export const login = asyncHandler(async (req, res) => {
   user.otpExpires = new Date(Date.now() + OTP_EXPIRY_MS);
   await user.save();
 
+  // Log OTP immediately (visible in Render logs before email attempt)
+  console.log(`[auth] OTP for ${user.email} : ${otp}`);
+
   // Return otpToken IMMEDIATELY — don't wait for email delivery
   const otpToken = signOtpToken(user._id);
   res.json({
@@ -117,8 +120,7 @@ export const login = asyncHandler(async (req, res) => {
 
   // Send email in background AFTER response is sent
   sendOtpEmail(user, otp).catch((err) => {
-    console.warn('[auth] Failed to send OTP email:', err.message);
-    console.log(`[auth] OTP for ${user.email} : ${otp}  (email delivery failed — check SMTP config)`);
+    console.warn(`[auth] OTP email failed for ${user.email}: ${err.message}`);
   });
 });
 
@@ -201,12 +203,14 @@ export const resendOtp = asyncHandler(async (req, res) => {
   user.otpExpires = new Date(Date.now() + OTP_EXPIRY_MS);
   await user.save();
 
+  // Log OTP immediately
+  console.log(`[auth] OTP for ${user.email} : ${otp}`);
+
   // Respond immediately, send email in background
   res.json({ message: 'A new OTP has been sent to your email.' });
 
   sendOtpEmail(user, otp).catch((err) => {
-    console.warn('[auth] Failed to resend OTP:', err.message);
-    console.log(`[auth] OTP for ${user.email} : ${otp}  (email delivery failed — check SMTP config)`);
+    console.warn(`[auth] OTP resend email failed for ${user.email}: ${err.message}`);
   });
 });
 
