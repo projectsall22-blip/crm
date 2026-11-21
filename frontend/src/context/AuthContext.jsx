@@ -8,7 +8,15 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const login = useCallback(async (email, password) => {
+    // Step 1: verify password → backend sends OTP, returns otpToken
     const res = await api.post('/auth/login', { email, password });
+    // res.data = { otpToken, emailHint, message } — NOT a full session yet
+    return res.data;
+  }, []);
+
+  // Step 2: called after user enters OTP
+  const verifyOtp = useCallback(async (otpToken, otp) => {
+    const res = await api.post('/auth/verify-otp', { otpToken, otp });
     localStorage.setItem('crm_access_token', res.data.accessToken);
     localStorage.setItem('crm_user', JSON.stringify(res.data.user));
     setUser(res.data.user);
@@ -74,6 +82,7 @@ export function AuthProvider({ children }) {
     user,
     loading,
     login,
+    verifyOtp,
     logout,
     refreshUser,
     isAuthenticated: !!user,

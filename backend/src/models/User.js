@@ -29,6 +29,9 @@ const userSchema = new Schema(
     // password reset
     resetTokenHash: { type: String, default: null },
     resetTokenExpires: { type: Date, default: null },
+    // email OTP (login 2FA)
+    otpHash: { type: String, default: null, select: false },
+    otpExpires: { type: Date, default: null },
     lastLoginAt: { type: Date, default: null },
     avatarUrl: { type: String, default: '' },
   },
@@ -52,6 +55,8 @@ userSchema.methods.toSafeObject = function toSafeObject() {
   delete obj.refreshTokenHash;
   delete obj.resetTokenHash;
   delete obj.resetTokenExpires;
+  delete obj.otpHash;
+  delete obj.otpExpires;
   delete obj.__v;
   return obj;
 };
