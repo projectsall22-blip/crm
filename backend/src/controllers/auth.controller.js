@@ -107,24 +107,18 @@ export const login = asyncHandler(async (req, res) => {
   user.otpExpires = new Date(Date.now() + OTP_EXPIRY_MS);
   await user.save();
 
-  // Send OTP email — if SMTP not configured, log to console (dev/staging fallback)
-  try {
-    await sendOtpEmail(user, otp);
-  } catch (err) {
-    console.warn('[auth] Failed to send OTP email:', err.message);
-    // Fallback: print OTP to server logs so admin can still log in
-    // even when SMTP is not yet configured
-    console.log(`[auth] OTP for ${user.email} : ${otp}  (email delivery failed — check SMTP config)`);
-  }
-
-  // Return a short-lived pre-auth token (no access to any protected routes)
+  // Return otpToken IMMEDIATELY — don't wait for email delivery
   const otpToken = signOtpToken(user._id);
-
   res.json({
     message: 'OTP sent to your registered email address.',
     otpToken,
-    // Send masked email so frontend can display "sent to j***@gmail.com"
     emailHint: maskEmail(user.email),
+  });
+
+  // Send email in background AFTER response is sent
+  sendOtpEmail(user, otp).catch((err) => {
+    console.warn('[auth] Failed to send OTP email:', err.message);
+    console.log(`[auth] OTP for ${user.email} : ${otp}  (email delivery failed — check SMTP config)`);
   });
 });
 
@@ -207,14 +201,13 @@ export const resendOtp = asyncHandler(async (req, res) => {
   user.otpExpires = new Date(Date.now() + OTP_EXPIRY_MS);
   await user.save();
 
-  try {
-    await sendOtpEmail(user, otp);
-  } catch (err) {
+  // Respond immediately, send email in background
+  res.json({ message: 'A new OTP has been sent to your email.' });
+
+  sendOtpEmail(user, otp).catch((err) => {
     console.warn('[auth] Failed to resend OTP:', err.message);
     console.log(`[auth] OTP for ${user.email} : ${otp}  (email delivery failed — check SMTP config)`);
-  }
-
-  res.json({ message: 'A new OTP has been sent to your email.' });
+  });
 });
 
 // ── POST /auth/logout ──────────────────────────────────────────
