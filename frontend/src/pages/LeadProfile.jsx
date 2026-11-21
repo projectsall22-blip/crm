@@ -43,7 +43,22 @@ export default function LeadProfile() {
 
   const handleUpdate = async (e) => {
     e.preventDefault(); setSaving(true);
-    try { await api.put(`/leads/${id}`, form); fetchData(); setShowEdit(false); } catch { } finally { setSaving(false); }
+    try {
+      await api.put(`/leads/${id}`, {
+        ...form,
+        // Send undefined instead of empty string so optional validators don't reject
+        nextFollowUpDate: form.nextFollowUpDate || undefined,
+        expectedPremium: form.expectedPremium === '' ? undefined : form.expectedPremium,
+        email: form.email || undefined,
+        phone: form.phone || undefined,
+      });
+      fetchData();
+      setShowEdit(false);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to save. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const [wonNotice, setWonNotice] = useState({ show: false, clientName: '', clientId: '' });
