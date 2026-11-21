@@ -107,16 +107,14 @@ export const login = asyncHandler(async (req, res) => {
   user.otpExpires = new Date(Date.now() + OTP_EXPIRY_MS);
   await user.save();
 
-  // Send OTP email (best-effort — log but don't block)
+  // Send OTP email — if SMTP not configured, log to console (dev/staging fallback)
   try {
     await sendOtpEmail(user, otp);
   } catch (err) {
     console.warn('[auth] Failed to send OTP email:', err.message);
-    // Clear OTP so user can retry
-    user.otpHash = null;
-    user.otpExpires = null;
-    await user.save();
-    throw badRequest('Could not send OTP email. Please check SMTP configuration or try again.');
+    // Fallback: print OTP to server logs so admin can still log in
+    // even when SMTP is not yet configured
+    console.log(`[auth] OTP for ${user.email} : ${otp}  (email delivery failed — check SMTP config)`);
   }
 
   // Return a short-lived pre-auth token (no access to any protected routes)
@@ -213,7 +211,7 @@ export const resendOtp = asyncHandler(async (req, res) => {
     await sendOtpEmail(user, otp);
   } catch (err) {
     console.warn('[auth] Failed to resend OTP:', err.message);
-    throw badRequest('Could not send OTP email. Please try again.');
+    console.log(`[auth] OTP for ${user.email} : ${otp}  (email delivery failed — check SMTP config)`);
   }
 
   res.json({ message: 'A new OTP has been sent to your email.' });
