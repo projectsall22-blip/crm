@@ -27,12 +27,18 @@ export const config = {
 
   smtp: {
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    port: parseInt(process.env.SMTP_PORT || '465', 10),
     secure: process.env.SMTP_SECURE === 'true',
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || '',
     fromName: process.env.SMTP_FROM_NAME || 'Oracle RMS London North',
     fromAddress: process.env.SMTP_FROM_ADDRESS || 'noreply@brokerage.com',
+  },
+
+  resend: {
+    apiKey: process.env.RESEND_API_KEY || '',
+    fromAddress: process.env.RESEND_FROM_ADDRESS || process.env.SMTP_FROM_ADDRESS || 'noreply@brokerage.com',
+    fromName: process.env.RESEND_FROM_NAME || process.env.SMTP_FROM_NAME || 'Oracle RMS London North',
   },
 
   upload: {
