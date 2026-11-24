@@ -1,18 +1,13 @@
 import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
-import * as Brevo from '@getbrevo/brevo';
+import { BrevoClient } from '@getbrevo/brevo';
 import { config } from '../config/env.js';
 
 // ── Brevo API client (HTTP — no port issues on Render) ─────────
 let brevoClient = null;
 function getBrevoClient() {
   if (!brevoClient && config.brevo.apiKey) {
-    const apiInstance = new Brevo.TransactionalEmailsApi();
-    apiInstance.setApiKey(
-      Brevo.TransactionalEmailsApiApiKeys.apiKey,
-      config.brevo.apiKey
-    );
-    brevoClient = apiInstance;
+    brevoClient = new BrevoClient({ apiKey: config.brevo.apiKey });
   }
   return brevoClient;
 }
@@ -54,20 +49,16 @@ export async function sendRawEmail({ to, cc = [], bcc = [], subject, html, text 
   // ── 1. Brevo API ─────────────────────────────────────────────
   const brevo = getBrevoClient();
   if (brevo) {
-    const sendSmtpEmail = new Brevo.SendSmtpEmail();
-    sendSmtpEmail.sender = {
-      name: config.brevo.fromName,
-      email: config.brevo.fromAddress,
-    };
-    sendSmtpEmail.to      = toList.map((e) => ({ email: e }));
-    sendSmtpEmail.cc      = cc.length  ? cc.map((e)  => ({ email: e })) : undefined;
-    sendSmtpEmail.bcc     = bcc.length ? bcc.map((e) => ({ email: e })) : undefined;
-    sendSmtpEmail.subject = subject;
-    sendSmtpEmail.htmlContent = html;
-    sendSmtpEmail.textContent = text || htmlToText(html);
-
-    const result = await brevo.sendTransacEmail(sendSmtpEmail);
-    return { messageId: result.body?.messageId || 'brevo-ok' };
+    const result = await brevo.transactionalEmails.sendTransacEmail({
+      sender: { name: config.brevo.fromName, email: config.brevo.fromAddress },
+      to:      toList.map((e) => ({ email: e })),
+      cc:      cc.length  ? cc.map((e)  => ({ email: e })) : undefined,
+      bcc:     bcc.length ? bcc.map((e) => ({ email: e })) : undefined,
+      subject,
+      htmlContent:  html,
+      textContent: text || htmlToText(html),
+    });
+    return { messageId: result.messageId || 'brevo-ok' };
   }
 
   // ── 2. Resend API ────────────────────────────────────────────
