@@ -41,6 +41,12 @@ export const config = {
     fromName: process.env.RESEND_FROM_NAME || process.env.SMTP_FROM_NAME || 'Oracle RMS London North',
   },
 
+  brevo: {
+    apiKey: process.env.BREVO_API_KEY || '',
+    fromAddress: process.env.SMTP_FROM_ADDRESS || 'noreply@brokerage.com',
+    fromName: process.env.SMTP_FROM_NAME || 'Oracle RMS London North',
+  },
+
   upload: {
     dir: process.env.UPLOAD_DIR || './uploads',
     maxUploadMb: parseInt(process.env.MAX_UPLOAD_MB || '15', 10),

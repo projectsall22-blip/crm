@@ -1,8 +1,23 @@
 import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
+import * as Brevo from '@getbrevo/brevo';
 import { config } from '../config/env.js';
 
-// ── Resend client (HTTP API — works on Render free tier) ──────
+// ── Brevo API client (HTTP — no port issues on Render) ─────────
+let brevoClient = null;
+function getBrevoClient() {
+  if (!brevoClient && config.brevo.apiKey) {
+    const apiInstance = new Brevo.TransactionalEmailsApi();
+    apiInstance.setApiKey(
+      Brevo.TransactionalEmailsApiApiKeys.apiKey,
+      config.brevo.apiKey
+    );
+    brevoClient = apiInstance;
+  }
+  return brevoClient;
+}
+
+// ── Resend client (HTTP fallback) ─────────────────────────────
 let resendClient = null;
 function getResendClient() {
   if (!resendClient && config.resend.apiKey) {
@@ -11,7 +26,7 @@ function getResendClient() {
   return resendClient;
 }
 
-// ── Nodemailer transporter (SMTP fallback) ────────────────────
+// ── Nodemailer transporter (last fallback) ────────────────────
 let transporter = null;
 function getTransporter() {
   if (transporter) return transporter;
@@ -19,10 +34,7 @@ function getTransporter() {
     host: config.smtp.host,
     port: config.smtp.port,
     secure: config.smtp.secure,
-    auth: {
-      user: config.smtp.user,
-      pass: config.smtp.pass,
-    },
+    auth: { user: config.smtp.user, pass: config.smtp.pass },
     connectionTimeout: 30000,
     greetingTimeout: 30000,
     socketTimeout: 30000,
@@ -31,16 +43,37 @@ function getTransporter() {
 }
 
 /**
- * Send email — tries Resend first (HTTP, works on Render free tier),
- * falls back to SMTP nodemailer if Resend key not configured.
+ * Send email:
+ * 1. Brevo API (if BREVO_API_KEY set)
+ * 2. Resend API (if RESEND_API_KEY set)
+ * 3. SMTP nodemailer (fallback)
  */
 export async function sendRawEmail({ to, cc = [], bcc = [], subject, html, text }) {
-  const toList  = Array.isArray(to) ? to : [to];
-  const resend  = getResendClient();
+  const toList = Array.isArray(to) ? to : [to];
 
+  // ── 1. Brevo API ─────────────────────────────────────────────
+  const brevo = getBrevoClient();
+  if (brevo) {
+    const sendSmtpEmail = new Brevo.SendSmtpEmail();
+    sendSmtpEmail.sender = {
+      name: config.brevo.fromName,
+      email: config.brevo.fromAddress,
+    };
+    sendSmtpEmail.to      = toList.map((e) => ({ email: e }));
+    sendSmtpEmail.cc      = cc.length  ? cc.map((e)  => ({ email: e })) : undefined;
+    sendSmtpEmail.bcc     = bcc.length ? bcc.map((e) => ({ email: e })) : undefined;
+    sendSmtpEmail.subject = subject;
+    sendSmtpEmail.htmlContent = html;
+    sendSmtpEmail.textContent = text || htmlToText(html);
+
+    const result = await brevo.sendTransacEmail(sendSmtpEmail);
+    return { messageId: result.body?.messageId || 'brevo-ok' };
+  }
+
+  // ── 2. Resend API ────────────────────────────────────────────
+  const resend = getResendClient();
   if (resend) {
-    // ── Resend path ──────────────────────────────────────────
-    const from = `${config.resend.fromName} <${config.resend.fromAddress}>`;
+    const from   = `${config.resend.fromName} <${config.resend.fromAddress}>`;
     const result = await resend.emails.send({
       from,
       to:      toList,
@@ -54,7 +87,7 @@ export async function sendRawEmail({ to, cc = [], bcc = [], subject, html, text 
     return { messageId: result.data?.id || 'resend-ok' };
   }
 
-  // ── SMTP fallback ────────────────────────────────────────────
+  // ── 3. SMTP fallback ─────────────────────────────────────────
   const t    = getTransporter();
   const from = `"${config.smtp.fromName}" <${config.smtp.fromAddress}>`;
   const info = await t.sendMail({
@@ -69,15 +102,9 @@ export async function sendRawEmail({ to, cc = [], bcc = [], subject, html, text 
   return { messageId: info.messageId };
 }
 
-/**
- * Verify connection — Resend: lightweight ping, SMTP: t.verify() with timeout.
- */
 export async function verifySmtp() {
-  const resend = getResendClient();
-  if (resend) {
-    // Resend has no explicit verify — just confirm the key is set
-    return { ok: true, message: 'Resend API key configured — HTTP email delivery ready.' };
-  }
+  if (config.brevo.apiKey)  return { ok: true, message: 'Brevo API configured — HTTP email ready.' };
+  if (config.resend.apiKey) return { ok: true, message: 'Resend API configured — HTTP email ready.' };
 
   try {
     const t = getTransporter();
@@ -94,9 +121,8 @@ export async function verifySmtp() {
 }
 
 export function getFromAddress() {
-  if (config.resend.apiKey) {
-    return `"${config.resend.fromName}" <${config.resend.fromAddress}>`;
-  }
+  if (config.brevo.apiKey)  return `"${config.brevo.fromName}" <${config.brevo.fromAddress}>`;
+  if (config.resend.apiKey) return `"${config.resend.fromName}" <${config.resend.fromAddress}>`;
   return `"${config.smtp.fromName}" <${config.smtp.fromAddress}>`;
 }
 
