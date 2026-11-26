@@ -27,6 +27,7 @@ import emailRoutes from './routes/email.routes.js';
 import reportRoutes from './routes/report.routes.js';
 import auditRoutes from './routes/audit.routes.js';
 import publicLeadRoutes from './routes/publicLead.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -74,6 +75,8 @@ app.use(`${v1}/reports`, reportRoutes);
 app.use(`${v1}/audit-logs`, auditRoutes);
 // Public (no auth) — lead intake form
 app.use(`${v1}/public/lead`, publicLeadRoutes);
+// Notifications
+app.use(`${v1}/notifications`, notificationRoutes);
 
 // --- 404 & error handling ---
 app.use(notFound);

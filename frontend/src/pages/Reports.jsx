@@ -43,7 +43,7 @@ export default function Reports() {
         <nav className="flex gap-1">
           {['Overview','Producer Performance','Lead Analysis','Policy Analysis'].map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab===t ? 'border-navy-600 text-navy-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>{t}</button>
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab===t ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>{t}</button>
           ))}
         </nav>
       </div>
@@ -55,8 +55,8 @@ export default function Reports() {
               ['Total Clients', clients.total, 'text-blue-700'],
               ['Total Leads', leads.total, 'text-purple-700'],
               ['Won Leads', leads.won, 'text-emerald-700'],
-              ['Conversion Rate', `${leads.conversionRate}%`, 'text-navy-700'],
-              ['Active Policies', policies.active, 'text-navy-700'],
+              ['Conversion Rate', `${leads.conversionRate}%`, 'text-indigo-700'],
+              ['Active Policies', policies.active, 'text-indigo-700'],
               ['Pending Issuance', policies.pendingIssuance, 'text-amber-700'],
               ['Upcoming Renewals', policies.upcomingRenewals, 'text-blue-700'],
               ['Overdue Payments', policies.overduePayments, 'text-red-700'],
@@ -70,7 +70,7 @@ export default function Reports() {
           <div className="grid grid-cols-2 gap-4">
             <div className="card card-body">
               <h3 className="text-sm font-semibold text-slate-700 mb-1">Total Premium</h3>
-              <p className="text-3xl font-bold text-navy-700">{formatCurrency(policies.totalPremium)}</p>
+              <p className="text-3xl font-bold text-indigo-700">{formatCurrency(policies.totalPremium)}</p>
             </div>
             <div className="card card-body">
               <h3 className="text-sm font-semibold text-slate-700 mb-1">Total Commission</h3>
