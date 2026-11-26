@@ -231,8 +231,14 @@ export const createLead = asyncHandler(async (req, res) => {
 
   // --- Manual selective email send (if requested) ---
   let emailResult = null;
-  if (emailNotification && emailNotification.sendNow && emailNotification.recipients?.length > 0) {
-    emailResult = await sendSelectiveLeadEmail(lead, emailNotification, req.user);
+  if (emailNotification && emailNotification.sendNow) {
+    // hasRecipients = checkbox-selected recipients OR a valid custom email was provided
+    const hasSelectedRecipients = Array.isArray(emailNotification.recipients) && emailNotification.recipients.length > 0;
+    const hasCustomEmail = typeof emailNotification.customEmail === 'string'
+      && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNotification.customEmail.trim());
+    if (hasSelectedRecipients || hasCustomEmail) {
+      emailResult = await sendSelectiveLeadEmail(lead, emailNotification, req.user);
+    }
   }
 
   res.status(201).json({
@@ -604,14 +610,21 @@ async function sendSelectiveLeadEmail(lead, emailNotification, user) {
     selectedFields = [],
     subject: customSubject,
     templateId,
+    customEmail,  // ← plain-text email address entered by user
   } = emailNotification;
 
-  if (!recipients || recipients.length === 0) {
+  // Merge customEmail into the recipients list before resolving
+  const rawRecipients = [...(Array.isArray(recipients) ? recipients : [])];
+  if (customEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customEmail.trim())) {
+    rawRecipients.push(customEmail.trim());
+  }
+
+  if (rawRecipients.length === 0) {
     return { message: 'No recipients specified — email not sent.' };
   }
 
   // Resolve recipient addresses
-  const recipientEmails = await resolveManualRecipients(recipients);
+  const recipientEmails = await resolveManualRecipients(rawRecipients);
 
   // Build the full field map, then extract ONLY selected fields
   const fieldMap = await buildLeadFieldMap(lead);
@@ -681,23 +694,24 @@ async function sendSelectiveLeadEmail(lead, emailNotification, user) {
 async function resolveManualRecipients(recipients) {
   const addresses = new Set();
   for (const r of recipients) {
-    if (typeof r === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r)) {
-      // raw email
-      addresses.add(r);
+    if (!r) continue;
+    if (typeof r === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.trim())) {
+      // raw email address (includes customEmail passed directly)
+      addresses.add(r.trim().toLowerCase());
     } else if (r === 'manager') {
       const managers = await User.find({ role: 'manager', isActive: true }).select('email');
-      managers.forEach((m) => m.email && addresses.add(m.email));
+      managers.forEach((m) => m.email && addresses.add(m.email.toLowerCase()));
     } else if (r === 'admin') {
       const admins = await User.find({ role: 'admin', isActive: true }).select('email');
-      admins.forEach((a) => a.email && addresses.add(a.email));
+      admins.forEach((a) => a.email && addresses.add(a.email.toLowerCase()));
     } else if (r === 'producer' || r === 'assignedProducer') {
       // resolved by caller via lead context — skip here
     } else if (typeof r === 'string' && r.length === 24) {
       // looks like a Mongo ObjectId — EmailRecipient
       const rec = await EmailRecipient.findById(r).select('email isActive');
-      if (rec?.isActive && rec.email) addresses.add(rec.email);
-    } else if (typeof r === 'object' && r.email) {
-      addresses.add(r.email);
+      if (rec?.isActive && rec.email) addresses.add(rec.email.toLowerCase());
+    } else if (typeof r === 'object' && r?.email) {
+      addresses.add(r.email.toLowerCase());
     }
   }
   return [...addresses];

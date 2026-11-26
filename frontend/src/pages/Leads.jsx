@@ -85,7 +85,12 @@ export default function Leads() {
         ...form,
         expectedPremium: form.expectedPremium ? Number(form.expectedPremium) : undefined,
         emailNotification: emailNotif.sendNow
-          ? { sendNow: true, recipients: buildRecipients(), selectedFields: emailNotif.selectedFields }
+          ? {
+              sendNow: true,
+              recipients: emailNotif.recipients,          // checkbox-selected role keywords + recipient IDs
+              customEmail: emailNotif.customEmail.trim() || undefined,  // plain custom address sent separately
+              selectedFields: emailNotif.selectedFields,
+            }
           : undefined,
       };
       await api.post('/leads', payload);
